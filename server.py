@@ -1,5 +1,5 @@
 #  coding: utf-8 
-import SocketServer
+import SocketServer, os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -30,10 +30,44 @@ import SocketServer
 class MyWebServer(SocketServer.BaseRequestHandler):
     
     def handle(self):
-        self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall("OK")
+        #self.data = self.request.recv(1024)
+        #filename = self.data.split()[1]
+        #print(filename)
+        self.data = self.request.recv(1024)
+        filename = self.data.split()[1]
+        #print('filename is' + filename)
 
+        if 'deep' in filename:
+            pathname = 'www/deep/index.html'
+            basecss = 'www/deep/deep.css'
+        else:
+            pathname = 'www/index.html'
+            basecss = 'www/base.css'
+
+        if filename[-1] == 'l':
+            #print('html requested')
+            self.request.sendall('HTTP/1.1 200 OK\nContent-Type: text/html\n\n')
+            #if os.path.exists(pathname):
+            #    self.request.sendall('HTTP/1.1 200 OK\n')
+            
+            f = open(pathname, 'r')
+            dataToSend = ''
+            for line in f:
+                dataToSend = dataToSend + line
+            f.close()
+            self.request.sendall(dataToSend)
+
+        elif filename[-1] == 's': #is css
+            #print('basecss is '+basecss)
+            self.request.sendall('HTTP/1.1 200 OK\nContent-Type: text/css\n\n')
+
+            css = open(basecss, 'r')
+            cssToSend = ''
+            for line in css:
+                cssToSend = cssToSend + line
+            css.close()
+            self.request.sendall(cssToSend)
+       
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
 
